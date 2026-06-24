@@ -1,0 +1,304 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0}
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem}
+.topbar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.topbar-right{display:flex;gap:8px;flex-wrap:wrap}
+.range-select{padding:6px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);cursor:pointer}
+.date-input{padding:6px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;font-family:var(--font-sans);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn:active{transform:scale(0.98)}
+.btn-csv{color:#0F6E56;border-color:#5DCAA5}
+.btn-pdf{color:#185FA5;border-color:#85B7EB}
+.btn-sheets{color:#854F0B;border-color:#EF9F27}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.metric-val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.metric-delta{font-size:11px;margin-top:3px}
+.up{color:#0F6E56}.down{color:#A32D2D}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;width:100%}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+th{text-align:left;padding:7px 8px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+td{padding:8px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tr:last-child td{border-bottom:none}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block}
+.bg{background:#EAF3DE;color:#3B6D11}
+.br{background:#FCEBEB;color:#A32D2D}
+.ba{background:#FAEEDA;color:#854F0B}
+.api-box{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.api-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.api-desc{font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem;line-height:1.6}
+.api-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.api-step{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.step-num{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.step-txt{font-size:12px;color:var(--color-text-primary);font-weight:500}
+.step-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.toast{position:absolute;top:0;right:0;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:8px 14px;font-size:12px;color:var(--color-text-primary);display:none;align-items:center;gap:6px;z-index:10;white-space:nowrap}
+.toast.show{display:flex}
+.connect-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;font-family:var(--font-sans);cursor:pointer;font-weight:500;background:#185FA5;color:#fff;border:none}
+.connect-btn:hover{background:#0C447C}
+@media(max-width:480px){.two-col{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+</style>
+
+<div class="wrap" style="position:relative">
+<h2 class="sr-only">Google Ads reporting dashboard with CSV and PDF export and API connection guide</h2>
+
+<div id="toast" class="toast"><i class="ti ti-check" style="color:#0F6E56" aria-hidden="true"></i> <span id="toast-msg">Exported!</span></div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <i class="ti ti-search" style="font-size:16px;color:var(--color-text-secondary)" aria-hidden="true"></i>
+    <select class="range-select" id="rangeSelect" onchange="applyRange()">
+      <option value="7">Last 7 days</option>
+      <option value="14">Last 14 days</option>
+      <option value="30" selected>Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="custom">Custom range</option>
+    </select>
+    <div id="customDates" style="display:none;display:flex;gap:6px;align-items:center">
+      <input type="date" class="date-input" id="dateFrom" value="2025-05-01">
+      <span style="font-size:12px;color:var(--color-text-secondary)">to</span>
+      <input type="date" class="date-input" id="dateTo" value="2025-05-31">
+      <button class="btn" onclick="applyCustom()" style="padding:6px 10px;font-size:12px">Apply</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-csv" onclick="exportCSV()"><i class="ti ti-download" style="font-size:15px" aria-hidden="true"></i> CSV</button>
+    <button class="btn btn-pdf" onclick="exportPDF()"><i class="ti ti-file" style="font-size:15px" aria-hidden="true"></i> PDF</button>
+    <button class="btn btn-sheets" onclick="exportSheets()"><i class="ti ti-table" style="font-size:15px" aria-hidden="true"></i> Sheets</button>
+  </div>
+</div>
+
+<div id="range-label" style="font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem">Showing: last 30 days · Jun 24, 2025 – Jun 24, 2026</div>
+
+<div class="metric-grid" id="metrics">
+  <div class="metric"><div class="metric-label">Impressions</div><div class="metric-val" id="m-imp">512K</div><div class="metric-delta up" id="d-imp">↑ 15%</div></div>
+  <div class="metric"><div class="metric-label">Clicks</div><div class="metric-val" id="m-clk">18.4K</div><div class="metric-delta up" id="d-clk">↑ 9.1%</div></div>
+  <div class="metric"><div class="metric-label">CTR</div><div class="metric-val" id="m-ctr">3.59%</div><div class="metric-delta up" id="d-ctr">↑ 0.4pp</div></div>
+  <div class="metric"><div class="metric-label">Avg. CPC</div><div class="metric-val" id="m-cpc">$1.24</div><div class="metric-delta down" id="d-cpc">↑ $0.11</div></div>
+  <div class="metric"><div class="metric-label">Conversions</div><div class="metric-val" id="m-cvr">994</div><div class="metric-delta up" id="d-cvr">↑ 18%</div></div>
+  <div class="metric"><div class="metric-label">Total spend</div><div class="metric-val" id="m-spd">$22.8K</div><div class="metric-delta" id="d-spd">this period</div></div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="card-title">Clicks & conversions over time</div>
+    <div class="legend">
+      <span><span class="dot" style="background:#D85A30"></span>Clicks</span>
+      <span><span class="dot" style="background:#534AB7"></span>Conversions</span>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:200px"><canvas id="mainChart" role="img" aria-label="Line chart showing clicks and conversions over selected time period"></canvas></div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Campaign performance</div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="width:40%">Campaign</th><th style="width:20%">Spend</th><th style="width:20%">Conv.</th><th style="width:20%">Status</th></tr></thead>
+      <tbody id="camp-table">
+        <tr><td>Brand Search</td><td>$8,200</td><td>412</td><td><span class="badge bg">Active</span></td></tr>
+        <tr><td>Shopping – All</td><td>$6,100</td><td>298</td><td><span class="badge bg">Active</span></td></tr>
+        <tr><td>Competitor KW</td><td>$4,300</td><td>184</td><td><span class="badge bg">Active</span></td></tr>
+        <tr><td>Display Retarget</td><td>$2,900</td><td>76</td><td><span class="badge ba">Paused</span></td></tr>
+        <tr><td>YouTube Awareness</td><td>$1,300</td><td>24</td><td><span class="badge br">Low budget</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Top keywords</div>
+    </div>
+    <table>
+      <thead><tr><th style="width:50%">Keyword</th><th style="width:20%">CTR</th><th style="width:15%">QS</th><th style="width:15%">CPC</th></tr></thead>
+      <tbody>
+        <tr><td>digital marketing</td><td>6.2%</td><td><span class="badge bg">9</span></td><td>$0.92</td></tr>
+        <tr><td>seo services</td><td>4.8%</td><td><span class="badge bg">8</span></td><td>$1.10</td></tr>
+        <tr><td>ppc agency</td><td>3.9%</td><td><span class="badge ba">7</span></td><td>$1.44</td></tr>
+        <tr><td>social media ads</td><td>2.1%</td><td><span class="badge br">5</span></td><td>$1.87</td></tr>
+        <tr><td>google ads help</td><td>1.8%</td><td><span class="badge br">4</span></td><td>$2.20</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="card-title"><i class="ti ti-brand-google" style="font-size:15px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i> Connect Google Ads API</div>
+    <button class="connect-btn" onclick="sendPrompt('How do I connect my Google Ads account via API and get my developer token?')">Connect account ↗</button>
+  </div>
+  <div class="api-desc" style="font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem;line-height:1.6">Pull live impressions, clicks, spend, and conversions directly from your Google Ads account. Requires a Google Ads developer token and OAuth2 credentials.</div>
+  <div class="api-steps">
+    <div class="api-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-txt">Get developer token</div>
+      <div class="step-sub">Apply at ads.google.com/api</div>
+    </div>
+    <div class="api-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-txt">OAuth2 credentials</div>
+      <div class="step-sub">Create in Google Cloud Console</div>
+    </div>
+    <div class="api-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-txt">Set customer ID</div>
+      <div class="step-sub">10-digit account number</div>
+    </div>
+    <div class="api-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-txt">GAQL query</div>
+      <div class="step-sub">Fetch metrics via REST</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+
+const datasets = {
+  7:  { labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], clicks:[420,510,480,630,710,780,490], convs:[62,81,58,97,110,94,72], imp:'89K', clk:'4.0K', ctr:'4.49%', cpc:'$1.18', cvr:'174', spd:'$4.7K', dimp:'↑ 8%', dclk:'↑ 5%', dctr:'↑ 0.2pp', dcpc:'↑ $0.04', dcvr:'↑ 11%', dspd:'this period' },
+  14: { labels:['W1 Mon','W1 Wed','W1 Fri','W1 Sun','W2 Mon','W2 Wed','W2 Fri','W2 Sun'], clicks:[380,520,610,450,490,580,700,510], convs:[55,78,92,68,71,88,105,77], imp:'189K', clk:'8.2K', ctr:'4.34%', cpc:'$1.21', cvr:'378', spd:'$9.9K', dimp:'↑ 11%', dclk:'↑ 7%', dctr:'↑ 0.3pp', dcpc:'↑ $0.07', dcvr:'↑ 14%', dspd:'this period' },
+  30: { labels:['Jun 1','Jun 5','Jun 9','Jun 13','Jun 17','Jun 21','Jun 24'], clicks:[2800,3200,2500,3800,4100,3600,2900], convs:[420,480,390,570,620,540,430], imp:'512K', clk:'18.4K', ctr:'3.59%', cpc:'$1.24', cvr:'994', spd:'$22.8K', dimp:'↑ 15%', dclk:'↑ 9.1%', dctr:'↑ 0.4pp', dcpc:'↑ $0.11', dcvr:'↑ 18%', dspd:'this period' },
+  90: { labels:['Apr','Early May','Mid May','Late May','Early Jun','Mid Jun','Jun 24'], clicks:[9200,10400,8800,12100,13500,11900,9600], convs:[1380,1560,1320,1815,2025,1785,1440], imp:'1.4M', clk:'52K', ctr:'3.71%', cpc:'$1.19', cvr:'2,842', spd:'$61.9K', dimp:'↑ 22%', dclk:'↑ 17%', dctr:'↑ 0.6pp', dcpc:'↓ $0.08', dcvr:'↑ 25%', dspd:'this period' }
+};
+
+let chart;
+function buildChart(d){
+  const ctx=document.getElementById('mainChart').getContext('2d');
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{type:'line',data:{labels:d.labels,datasets:[
+    {label:'Clicks',data:d.clicks,borderColor:'#D85A30',backgroundColor:'rgba(216,90,48,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#D85A30',borderDash:[0]},
+    {label:'Conversions',data:d.convs,borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#534AB7',borderDash:[5,3],yAxisID:'y1'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:35,font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11}}},y1:{position:'right',grid:{display:false},ticks:{font:{size:11}}}}}});
+}
+
+function updateMetrics(d){
+  document.getElementById('m-imp').textContent=d.imp;
+  document.getElementById('m-clk').textContent=d.clk;
+  document.getElementById('m-ctr').textContent=d.ctr;
+  document.getElementById('m-cpc').textContent=d.cpc;
+  document.getElementById('m-cvr').textContent=d.cvr;
+  document.getElementById('m-spd').textContent=d.spd;
+  document.getElementById('d-imp').textContent=d.dimp;
+  document.getElementById('d-clk').textContent=d.dclk;
+  document.getElementById('d-ctr').textContent=d.dctr;
+  document.getElementById('d-cpc').textContent=d.dcpc;
+  document.getElementById('d-cvr').textContent=d.dcvr;
+}
+
+function applyRange(){
+  const val=document.getElementById('rangeSelect').value;
+  const cd=document.getElementById('customDates');
+  if(val==='custom'){cd.style.display='flex';return;}
+  else cd.style.display='none';
+  const d=datasets[parseInt(val)];
+  buildChart(d);updateMetrics(d);
+  const now=new Date();
+  const from=new Date(now);from.setDate(from.getDate()-parseInt(val));
+  document.getElementById('range-label').textContent='Showing: last '+val+' days · '+from.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' – '+now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function applyCustom(){
+  const f=document.getElementById('dateFrom').value;
+  const t=document.getElementById('dateTo').value;
+  if(!f||!t)return;
+  const fd=new Date(f),td=new Date(t);
+  const diff=Math.round((td-fd)/(1000*60*60*24));
+  const key=diff<=7?7:diff<=14?14:diff<=30?30:90;
+  const d=datasets[key];
+  buildChart(d);updateMetrics(d);
+  document.getElementById('range-label').textContent='Showing: '+new Date(f).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' – '+new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function exportCSV(){
+  const range=document.getElementById('rangeSelect').value;
+  const d=datasets[range==='custom'?30:parseInt(range)]||datasets[30];
+  const rows=[
+    ['Date','Clicks','Conversions'],
+    ...d.labels.map((l,i)=>[l,d.clicks[i],d.convs[i]]),
+    [],['Metric','Value'],
+    ['Impressions',d.imp],['Clicks',d.clk],['CTR',d.ctr],['Avg CPC',d.cpc],['Conversions',d.cvr],['Total Spend',d.spd]
+  ];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='google_ads_report.csv';a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded — google_ads_report.csv');
+}
+
+function exportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const now=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  doc.setFontSize(18);doc.setFont(undefined,'bold');
+  doc.text('Google Ads Performance Report',14,20);
+  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120);
+  doc.text('Generated: '+now,14,28);
+  doc.setTextColor(0);
+  const range=document.getElementById('rangeSelect').value;
+  const d=datasets[range==='custom'?30:parseInt(range)]||datasets[30];
+  doc.setFontSize(12);doc.setFont(undefined,'bold');doc.text('Summary Metrics',14,42);
+  doc.setFontSize(10);doc.setFont(undefined,'normal');
+  const metrics=[['Impressions',d.imp],['Clicks',d.clk],['CTR',d.ctr],['Avg. CPC',d.cpc],['Conversions',d.cvr],['Total Spend',d.spd]];
+  let x=14,y=52;
+  metrics.forEach(([k,v],i)=>{
+    doc.setTextColor(120);doc.text(k,x,y);
+    doc.setTextColor(0);doc.setFont(undefined,'bold');doc.text(v,x,y+6);
+    doc.setFont(undefined,'normal');
+    x+=60;if((i+1)%3===0){x=14;y+=20;}
+  });
+  doc.setFontSize(12);doc.setFont(undefined,'bold');doc.text('Campaign Performance',14,y+12);
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(120);
+  let ty=y+22;
+  doc.text('Campaign',14,ty);doc.text('Spend',90,ty);doc.text('Conversions',130,ty);doc.text('Status',170,ty);
+  doc.line(14,ty+2,196,ty+2);doc.setTextColor(0);ty+=8;
+  const camps=[['Brand Search','$8,200','412','Active'],['Shopping – All','$6,100','298','Active'],['Competitor KW','$4,300','184','Active'],['Display Retarget','$2,900','76','Paused'],['YouTube Awareness','$1,300','24','Low budget']];
+  camps.forEach(([n,s,c,st])=>{
+    doc.text(n,14,ty);doc.text(s,90,ty);doc.text(c,130,ty);doc.text(st,170,ty);ty+=7;
+  });
+  doc.setFontSize(8);doc.setTextColor(150);doc.text('© '+new Date().getFullYear()+' Digital Marketing Dashboard · Confidential',14,285);
+  doc.save('google_ads_report.pdf');
+  showToast('PDF downloaded — google_ads_report.pdf');
+}
+
+function exportSheets(){
+  const range=document.getElementById('rangeSelect').value;
+  const d=datasets[range==='custom'?30:parseInt(range)]||datasets[30];
+  const rows=[
+    ['Date','Clicks','Conversions'],
+    ...d.labels.map((l,i)=>[l,d.clicks[i],d.convs[i]])
+  ];
+  const tsv=rows.map(r=>r.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(()=>{
+    showToast('Copied! Paste into Google Sheets');
+  }).catch(()=>{showToast('Select all & copy from the CSV export');});
+}
+
+buildChart(datasets[30]);
+</script>
